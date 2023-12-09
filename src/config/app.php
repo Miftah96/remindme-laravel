@@ -16,7 +16,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Laravel'),
+    'name' => env('APP_NAME', 'remindme-laravel'),
 
     /*
     |--------------------------------------------------------------------------
@@ -182,6 +182,7 @@ return [
     */
 
     'aliases' => Facade::defaultAliases()->merge([
+        'DB' => Illuminate\Support\Facades\DB::class,
         // 'Example' => App\Facades\Example::class,
     ])->toArray(),
 
