@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Collection;
 
 class Reminder extends Model
 {
@@ -16,9 +17,12 @@ class Reminder extends Model
         'event_at'
     ];
 
-    public function scopeGetData($query)
+    public function scopeGetData($query, $limit)
     {
-        return $query->select(DB::raw('id, title, description, remind_at, event_at'))->get();
+        return $query->select(DB::raw('id, title, description, remind_at, event_at'))
+            ->when($limit, function ($query, $limit) {
+                return $query->limit($limit);
+            })->get();
     }
 
     public function scopeGetDetail($query, $id)

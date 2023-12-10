@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Reminder;
@@ -13,10 +14,16 @@ class ReminderController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $reminders = Reminder::getData();
-        return Response::success($reminders);
+        try {
+            $limit = $request->limit;
+            $reminders = Reminder::getData($limit);
+            return Response::successWithLimit($reminders, $limit);
+        } catch (\Throwable $th){
+            DB::rollBack();
+            return  Response::internalServerError();
+        }
     }
 
     /**
@@ -46,8 +53,20 @@ class ReminderController extends Controller
      */
     public function show(string $id)
     {
-        $reminder = Reminder::getDetail($id);
-        return Response::success($reminder);
+        try {
+            $reminder = Reminder::getDetail($id);
+            
+            if ($reminder->isEmpty()) {
+                return Response::errNotFound();
+            }
+
+            return Response::success($reminder);
+        
+        } catch (\Throwable $th){
+            DB::rollBack();
+            return  Response::internalServerError();
+        }
+
     }
 
     /**
@@ -77,10 +96,14 @@ class ReminderController extends Controller
      */
     public function destroy(string $id)
     {
-        $reminder = Reminder::findOrFail($id);
+        $reminder = Reminder::where('id', $id)->first();
 
-        $reminder->delete();
+        if (empty($reminder)) {
+            return Response::errNotFound(404);
+        } else {
+            $reminder->delete();
 
-        return Response::delete($reminder);
+            return Response::delete($reminder);
+        }
     }
 }
